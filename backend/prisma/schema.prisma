@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ADMIN
+// ============================================
+model Usuario {
+  id       String   @id @default(cuid())
+  email    String   @unique
+  password String
+  nombre   String
+  creado   DateTime @default(now())
+}
+
+// ============================================
+// ESTUDIANTES
+// ============================================
+model Estudiante {
+  id              String   @id @default(cuid())
+  nombreCompleto  String
+  ci              String
+  expedido        String
+  fechaNacimiento DateTime
+  creado          DateTime @default(now())
+  actualizado     DateTime @updatedAt
+
+  certificados Certificado[]
+
+  @@unique([ci, expedido])
+  @@index([ci, expedido, fechaNacimiento])
+}
+
+// ============================================
+// CURSOS
+// ============================================
+model Curso {
+  id           String   @id @default(cuid())
+  nombre       String
+  descripcion  String?
+  imagenUrl    String?
+  fechaInicio  DateTime
+  fechaFin     DateTime
+  cargaHoraria Int
+  modalidad    String
+  creado       DateTime @default(now())
+  actualizado  DateTime @updatedAt
+
+  certificados Certificado[]
+}
+
+// ============================================
+// CERTIFICADOS
+// ============================================
+model Certificado {
+  id           String   @id @default(cuid())
+  codigo       String   @unique
+  estudianteId String
+  cursoId      String
+  notaFinal    Int
+  fechaEmision DateTime @default(now())
+  creado       DateTime @default(now())
+
+  estudiante Estudiante @relation(fields: [estudianteId], references: [id])
+  curso      Curso      @relation(fields: [cursoId], references: [id])
+
+  @@unique([estudianteId, cursoId])
+  @@index([codigo])
+}
